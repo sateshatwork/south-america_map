@@ -21,6 +21,11 @@
         height: 100vh;
       }
     </style>
+    <script
+      defer
+      src="https://cdn.rawgit.com/aparshin/leaflet-boundary-canvas/f00b4d35/src/BoundaryCanvas.js"
+    ></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   </head>
   <body>
     <div id="map"></div>
@@ -49,13 +54,71 @@
         // Add more countries as needed
       ];
 
-      // Initialize the map
-      const map = L.map("map").setView([-25, -65], 3.5);
+      var map = L.map("map");
 
-      // Add OpenStreetMap tile layer
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-      }).addTo(map);
+      // Array of country codes for Brazil and Argentina
+      var countries = [
+        "ARG",
+        "BOL",
+        "BRA",
+        "CHL",
+        "COL",
+        "ECU",
+        "GUY",
+        "PRY",
+        "PER",
+        "SUR",
+        "URY",
+        "VEN",
+        "NIC",
+        "GTM",
+        "PRI",
+        "CUB",
+        "CRI",
+        "PAN",
+        "HND",
+        "DOM",
+        "MEX",
+        "JAM",
+        "HTI",
+        "BHS",
+      ];
+
+      // Fetch GeoJSON data for each country and merge them into a single feature collection
+      var promises = countries.map(function (countryCode) {
+        return $.getJSON(
+          "https://cdn.rawgit.com/johan/world.geo.json/34c96bba/countries/" +
+            countryCode +
+            ".geo.json"
+        );
+      });
+
+      Promise.all(promises).then(function (geoJSONs) {
+        // Merge GeoJSON data for both countries into a single feature collection
+        var mergedGeoJSON = {
+          type: "FeatureCollection",
+          features: geoJSONs.flatMap(function (geoJSON) {
+            return geoJSON.features;
+          }),
+        };
+
+        // Create a Leaflet TileLayer with boundary constraints for the merged GeoJSON
+        var osm = new L.TileLayer.BoundaryCanvas(
+          "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          {
+            boundary: mergedGeoJSON,
+            attribution:
+              '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors, UK shape <a href="https://github.com/johan/world.geo.json">johan/word.geo.json</a>',
+          }
+        );
+
+        // Add the TileLayer to the map
+        map.addLayer(osm);
+
+        // Create a GeoJSON layer for the merged GeoJSON and fit the map bounds to it
+        var mergedLayer = L.geoJSON(mergedGeoJSON);
+        map.fitBounds(mergedLayer.getBounds());
+      });
 
       // Add markers for each country
       countriesData.forEach((country) => {
