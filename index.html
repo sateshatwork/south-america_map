@@ -18,7 +18,10 @@
     ></script>
     <style>
       #map {
-        height: 100vh;
+        height: 600px;
+      }
+      .leaflet-container {
+        background: #85d1d1;
       }
     </style>
     <script
@@ -38,18 +41,21 @@
           lat: -14.235,
           lon: -51.925,
           info: "Websites: www.lorem1.com",
+          img: "./brazil.jpg",
         },
         {
           name: "Argentina",
           lat: -38.416,
           lon: -63.616,
           info: "Websites: www.lorem2.com",
+          img: "./argentina.jpg",
         },
         {
           name: "Peru",
           lat: -9.19,
           lon: -75.0152,
           info: "Websites: www.lorem3.com",
+          img: "./peru.jpg",
         },
         // Add more countries as needed
       ];
@@ -123,7 +129,9 @@
       // Add markers for each country
       countriesData.forEach((country) => {
         const marker = L.marker([country.lat, country.lon]).addTo(map);
-        marker.bindPopup(`<b>${country.name}</b></br>${country.info}`);
+        marker.bindPopup(
+          `<img style="width: 250px;" src="${country.img}"\><br><b>${country.name}</b></br>${country.info}`
+        );
       });
     </script>
   </body>
